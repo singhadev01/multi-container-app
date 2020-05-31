@@ -1,0 +1,53 @@
+sudo: required
+services:
+  - docker
+
+#
+# series of commands to run before running tests
+#
+
+# -t  for tagging image you can name it anything
+
+before_install:
+  - docker build -t ajaysinghdocker/react-test -f ./Client/Dockerfile.dev ./Client
+
+#
+# series of command to run as part of test suite
+# if u get status code !=0  then travis assum test failed
+
+# override default run command with npm run test or yarn test
+script:
+  - docker run -e CI=true ajaysinghdocker/react-test yarn test -- --coverage
+
+after_success:
+  - docker build -t ajaysinghdocker/multi-client ./client
+  - docker build -t ajaysinghdocker/multi-nginx ./nginx
+  - docker build -t ajaysinghdocker/multi-server ./server
+  - docker build -t ajaysinghdocker/multi-worker ./worker
+
+  # Push images to docker HUB
+  # login to docker cli
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push ajaysinghdocker/multi-client
+  - docker push ajaysinghdocker/multi-nginx
+  - docker push ajaysinghdocker/multi-server
+  - docker push ajaysinghdocker/multi-worker
+#
+# travis ci comes up with option to deploy to predefined providers
+# travis ci will zip our code from master branch and push to s3 bucket
+# sepecify app name value as bucket_path
+
+# use awas api key to grant travis-ci access  to aws
+
+# deploy:
+#   provider: elasticbeanstalk
+#   region: "us-east-1"
+#   app: "docker-react2"
+#   env: "DockerReact2-env"
+#   bucket_name: "elasticbeanstalk-us-east-1-767455433881"
+#   bucket_path: "docker-react2"
+#   on:
+#     branch: master
+#   access_key_id: "$AWS_ACCESS_KEY"
+#   secret_access_key:
+#     secure: "$AWS_SECRET_ACCESS_KEY"
