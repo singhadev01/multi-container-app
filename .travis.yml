@@ -9,7 +9,7 @@ services:
 # -t  for tagging image you can name it anything
 
 before_install:
-  - docker build -t ajaysinghdocker/react-test -f ./Client/Dockerfile.dev ./Client
+  - docker build -t ajaysinghdocker/react-test -f ./client/Dockerfile.dev ./client
 
 #
 # series of command to run as part of test suite
